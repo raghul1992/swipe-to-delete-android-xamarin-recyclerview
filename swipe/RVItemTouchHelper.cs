@@ -1,60 +1,103 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using Android.App;
+using Android.Content;
+using Android.Graphics;
+using Android.OS;
+using Android.Runtime;
+using Android.Support.V7.Widget;
+using Android.Support.V7.Widget.Helper;
+using Android.Views;
+using Android.Widget;
+
+namespace swipe
+{
+    class RVItemTouchHelper : ItemTouchHelper.SimpleCallback
+    {
+        private float previousDx = 0;
 
 
-     <RelativeLayout
-                android:background="@android:color/black"
+        private RVItemTouchHelperListener _listener;
 
-           android:id="@+id/bg_left" 
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        public RVItemTouchHelper(int dragDirs, int swipeDirs, RVItemTouchHelperListener listener) : base(dragDirs, swipeDirs)
+        {
 
-          <ImageView
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-   android:layout_alignParentLeft="true"
-        android:src="@drawable/delete"
-            android:tint="@android:color/white"
-        />
+            _listener = listener;
+        }
 
-        </RelativeLayout>
+        public override bool OnMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
+        {
+            return false;
+        
+        }
+
+        public override void OnSwiped(RecyclerView.ViewHolder viewHolder, int direction)
+        {
+
+            if (_listener != null) {
+                _listener.onSwiped(viewHolder,direction,viewHolder.AdapterPosition);
+            }
+            previousDx = 0;
+
+        }
+
+
+        public override void ClearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)
+        {
+            View fg = ((recyclarAdapter.ViewHolder)viewHolder).fg;
+            DefaultUIUtil.ClearView(fg);  
+        }
+
+        public override void OnSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState)
+        {
+            if (viewHolder != null) {
+                View fg = ((recyclarAdapter.ViewHolder)viewHolder).fg;
+                DefaultUIUtil.OnSelected(fg);
+            }
+        }
+        public override int ConvertToAbsoluteDirection(int flags, int layoutDirection)
+        {
+            return base.ConvertToAbsoluteDirection(flags, layoutDirection);
+        }
+        public override void OnChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, bool isCurrentlyActive)
+        {
+
+
+            View fg = ((recyclarAdapter.ViewHolder)viewHolder).fg;
+
+            if (dX > 0)
+                {
+                    ((recyclarAdapter.ViewHolder)viewHolder).bg.Visibility= ViewStates.Visible;
+                ((recyclarAdapter.ViewHolder)viewHolder).bg_left.Visibility = ViewStates.Gone; 
+                }
+                else
+            {
+                ((recyclarAdapter.ViewHolder)viewHolder).bg.Visibility = ViewStates.Gone;
+                ((recyclarAdapter.ViewHolder)viewHolder).bg_left.Visibility = ViewStates.Visible;
+            }
+             
 
 
 
-    <RelativeLayout
-                android:background="@color/bgrow"
 
-           android:id="@+id/bg" 
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+            DefaultUIUtil.OnDraw(c, recyclerView, fg, dX, dY, actionState, isCurrentlyActive);
 
-          <ImageView
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-   android:layout_alignParentRight="true"
-        android:src="@drawable/delete"
-        />
+            previousDx = dX;
 
-        </RelativeLayout>
-   
-         <RelativeLayout
-           android:id="@+id/fg" 
-        android:background="@android:color/white"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
 
-        <TextView
-            android:layout_margin="10dp"
-            android:padding="10dp"
-            android:textSize="15sp"
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-   android:id="@+id/tv" 
-   />
-</RelativeLayout>
+        }
 
-</FrameLayout>
+        public override void OnChildDrawOver(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, bool isCurrentlyActive)
+        {
+            View fg = ((recyclarAdapter.ViewHolder)viewHolder).fg;
+            DefaultUIUtil.OnDrawOver(c, recyclerView, fg, dX, dY, actionState, isCurrentlyActive);
+        }
+
+
+
+
+    }
+}
